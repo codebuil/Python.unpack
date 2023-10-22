@@ -12,18 +12,28 @@ def extract_files(packed_file, output_directory):
         list_data = pak_file.read()
         list_entries = list_data.decode('utf-8').split('\n')
 
-        for entry in list_entries:
+        for i in range(len(list_entries)):
+            entry = list_entries[i]
             if entry:
-                
-                entrys=entry.split(',')
-                if len(entrys)>1:
-                    file_name=entrys[0]
-                    start_offset=entrys[1]
-                    start_offset = int(start_offset)
+                entrys = entry.split(',')
+                if len(entrys) > 1:
+                    file_name = entrys[0]
+                    start_offset = int(entrys[1])
+
+                    # Calcula o tamanho do arquivo atual com base no próximo arquivo na lista
+                    if i < len(list_entries) - 2:
+                        
+                        next_entry = list_entries[i + 1]
+                        next_start_offset = int(next_entry.split(',')[1])
+                        file_size = next_start_offset - start_offset
+                    else:
+                        # No último arquivo, extrai até o início do arquivo "list.txt"
+                        pak_file.seek(0)
+                        file_size = list_offset - start_offset
 
                     # Lê o conteúdo do arquivo do pacote
                     pak_file.seek(start_offset)
-                    file_data = pak_file.read()
+                    file_data = pak_file.read(file_size)
 
                     # Escreve o arquivo descompactado
                     with open(f"{output_directory}/{file_name}", 'wb') as output_file:
